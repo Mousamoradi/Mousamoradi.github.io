@@ -1,0 +1,60 @@
+name: Restore portrait chunks
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/restore-portrait.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Decode exact portrait chunks
+        run: |
+          python3 - << 'PY'
+          import base64, gzip, hashlib, pathlib
+          p4 = pathlib.Path("assets/_gz/p4.b64")
+          text = p4.read_text(encoding="utf-8")
+          old = "ZfFWnYSAI5ZZuHBJJ"
+          new = "ZfFWnYSAE5ZZuHBJJ"
+          if old in text:
+              text = text.replace(old, new, 1)
+              p4.write_text(text, encoding="utf-8")
+              print("p4 corrected")
+          elif new not in text:
+              raise SystemExit("p4 anchor missing")
+          expected = {
+              "p0": "da72589a620cc8b07f340821fc4333a332f12856",
+              "p1": "f8f0287135e9ba4e0dadb482522ca22845550043",
+              "p2": "32772b6ac12a7be05ffe1f91400700d5963cca4c",
+              "p3": "d7a3e99875baafe0ed3074df14038219dfbff6c3",
+              "p4": "2be6811e9d7c38109943a95229018b5880cfb714",
+              "p5": "05450084a7f36ff9719b83b995cfc89f74d602e7",
+              "p6": "d99eda15ff665055fd7d597f32334626692b252a",
+          }
+          for name, sha in expected.items():
+              raw = pathlib.Path(f"assets/_gz/{name}.b64").read_text(encoding="utf-8").strip()
+              data = gzip.decompress(base64.b64decode(raw))
+              blob = f"blob {len(data)}\0".encode() + data
+              got = hashlib.sha1(blob).hexdigest()
+              print(name, len(data), got)
+              if got != sha:
+                  raise SystemExit(f"{name} sha mismatch")
+              pathlib.Path(f"assets/{name}.txt").write_bytes(data)
+          PY
+      - name: Commit restored chunks
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/p0.txt assets/p1.txt assets/p2.txt assets/p3.txt assets/p4.txt assets/p5.txt assets/p6.txt
+          git rm -r --ignore-unmatch assets/_gz
+          git rm -f --ignore-unmatch .github/workflows/fix-portrait.yml .github/workflows/restore-portrait.yml
+          if git diff --cached --quiet; then
+            echo "no change"
+          else
+            git commit -m "Add faculty site pages"
+            git push
+          fi
