@@ -62,8 +62,29 @@ h3 { margin: 0.35rem 0 0; font-size: 1.25rem; }
 .btn:hover { background: var(--teal-hover); }
 .btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
 .btn.text { background: transparent; color: var(--ink); }
-.portrait { margin: 0 auto; width: min(100%, 22rem); }
-.portrait img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 1rem; box-shadow: var(--shadow); background: var(--paper); }
+.portrait { margin: 0 auto; width: min(100%, 22rem); justify-self: center; align-self: center; height: auto; }
+.portrait-frame {
+  position: relative;
+  box-sizing: content-box;
+  width: 100%;
+  height: 0;
+  padding-bottom: 100%;
+  overflow: hidden;
+  border-radius: 1rem;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  background: var(--card);
+}
+.portrait-frame img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  object-position: center 22%;
+  background: var(--card);
+}
 .portrait figcaption { margin-top: 0.7rem; text-align: center; font-family: var(--serif); font-style: italic; color: var(--muted); font-size: 0.92rem; }
 .stats-band { border-block: 1px solid var(--line); background: var(--paper-2); }
 .stats { display: grid; grid-template-columns: 1fr 1fr; }
