@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contact · Mousa Moradi</title>
+  <meta name="description" content="Contact Mousa Moradi at mmoradi2@meei.harvard.edu.">
+  <meta name="theme-color" content="#f3efe6">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,500;0,600;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,500;0,8..60,600;1,8..60,450&display=swap">
+  <link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="wrap header-bar">
+      <a class="brand" href="../index.html">Mousa Moradi, Ph.D.</a>
+      <nav class="nav" aria-label="Primary"><a href="../index.html">About</a><a href="../research/">Research</a><a href="../publications/">Publications</a><a href="../teaching/">Teaching</a><a href="../outreach/">Outreach</a><a href="../contact/" aria-current="page">Contact</a></nav>
+      <details class="menu">
+        <summary>Menu</summary>
+        <nav aria-label="Primary mobile"><a href="../index.html">About</a><a href="../research/">Research</a><a href="../publications/">Publications</a><a href="../teaching/">Teaching</a><a href="../outreach/">Outreach</a><a href="../contact/" aria-current="page">Contact</a></nav>
+      </details>
+    </div>
+  </header>
+  <main id="main" class="wrap page">
+    <header class="page-head">
+    <p class="eyebrow">Contact</p>
+    <h1>Write with a question, a dataset, or a course.</h1>
+    <p class="lede">I read email. Students and collaborators are welcome — especially if the problem is an incomplete measurement rather than a leaderboard.</p>
+  </header>
+    <div class="contact-grid">
+      <section class="card email-card">
+        <p class="eyebrow">Email</p>
+        <a class="email" href="mailto:mmoradi2@meei.harvard.edu">mmoradi2@meei.harvard.edu</a>
+        <div class="actions">
+          <a class="btn" href="mailto:mmoradi2@meei.harvard.edu">Compose</a>
+          <button class="btn ghost" type="button" id="copy">Copy address</button>
+        </div>
+        <dl>
+          <div><dt>Office</dt><dd>20 Staniford Street, Boston, MA 02114</dd></div>
+          <div><dt>Affiliation</dt><dd>Postdoctoral Research Fellow, Department of Ophthalmology<br>Harvard Medical School · Massachusetts Eye and Ear</dd></div>
+          <div><dt>Mentor</dt><dd>Nazlee Zebardast, M.D., M.Sc.</dd></div>
+        </dl>
+      </section>
+      <section>
+        <h2>Elsewhere</h2>
+        <ul class="channels">
+          <li><a href="https://scholar.google.com/citations?user=CYKwjg4AAAAJ&amp;hl=en" target="_blank" rel="noopener noreferrer"><strong>Google Scholar</strong><span>Citations and the full list</span></a></li><li><a href="https://ophai.hms.harvard.edu/team/mousa-moradi-phd/" target="_blank" rel="noopener noreferrer"><strong>Harvard Ophthalmology AI Lab</strong><span>Group page</span></a></li><li><a href="https://datascience.meei.harvard.edu/teams/dr-mousa-moradi/" target="_blank" rel="noopener noreferrer"><strong>Clinical Data Science Institute</strong><span>Mass Eye and Ear</span></a></li><li><a href="https://github.com/Mousamoradi" target="_blank" rel="noopener noreferrer"><strong>GitHub</strong><span>Code and demos</span></a></li><li><a href="https://www.linkedin.com/in/mousa-moradi-201263a0/" target="_blank" rel="noopener noreferrer"><strong>LinkedIn</strong><span>Professional profile</span></a></li>
+        </ul>
+      </section>
+    </div>
+  </main>
+  <footer class="site-footer">
+    <div class="wrap footer-grid">
+      <div>
+        <p class="display name">Mousa Moradi, Ph.D.</p>
+        <p class="soft">Postdoctoral Research Fellow</p>
+        <p class="muted">Harvard Medical School · Massachusetts Eye and Ear</p>
+        <p class="muted address">20 Staniford Street, Boston, MA 02114</p>
+        <a class="mail" href="mailto:mmoradi2@meei.harvard.edu">mmoradi2@meei.harvard.edu</a>
+      </div>
+      <ul class="foot-links"><li><a href="https://scholar.google.com/citations?user=CYKwjg4AAAAJ&amp;hl=en" target="_blank" rel="noopener noreferrer">Google Scholar</a></li><li><a href="https://ophai.hms.harvard.edu/team/mousa-moradi-phd/" target="_blank" rel="noopener noreferrer">Harvard Ophthalmology AI Lab</a></li><li><a href="https://datascience.meei.harvard.edu/teams/dr-mousa-moradi/" target="_blank" rel="noopener noreferrer">Clinical Data Science Institute</a></li><li><a href="https://github.com/Mousamoradi" target="_blank" rel="noopener noreferrer">GitHub</a></li><li><a href="https://www.linkedin.com/in/mousa-moradi-201263a0/" target="_blank" rel="noopener noreferrer">LinkedIn</a></li></ul>
+    </div>
+    <div class="fine">
+      <p class="wrap">© 2026 Mousa Moradi. Citation counts are a Google Scholar snapshot from November 15, 2026.</p>
+    </div>
+  </footer>
+  <script>
+    document.getElementById("copy").addEventListener("click", async () => {
+      const button = document.getElementById("copy");
+      try {
+        await navigator.clipboard.writeText("mmoradi2@meei.harvard.edu");
+        button.textContent = "Copied";
+        setTimeout(() => { button.textContent = "Copy address"; }, 2000);
+      } catch {
+        button.textContent = "Copy address";
+      }
+    });
+  </script>
+</body>
+</html>
