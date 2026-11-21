@@ -1,34 +1,55 @@
 #!/usr/bin/env python3
 """Attempt to refresh Google Scholar citation metrics on the static site.
 
-Google Scholar frequently blocks automated requests. This script fails gracefully
-(exit 0 with no changes) when it cannot fetch fresh data.
+Google Scholar frequently blocks automated requests from GitHub Actions (datacenter IPs).
+This script tries direct access first, then free proxies (via scholarly.ProxyGenerator),
+and fails gracefully (exit 0, no changes) when blocked.
 """
+import os
 import re
 import sys
+import time
+import random
 from datetime import datetime
 from pathlib import Path
 
 try:
-    from scholarly import scholarly
+    from scholarly import scholarly, ProxyGenerator
 except ImportError:
     print("scholarly not installed", file=sys.stderr)
     sys.exit(0)
 
 AUTHOR_ID = "CYKwjg4AAAAJ"
+IS_GITHUB_ACTIONS = os.getenv("GITHUB_ACTIONS") == "true"
 
-def fetch_metrics():
+def fetch_metrics(use_proxy=False):
     try:
+        if use_proxy and IS_GITHUB_ACTIONS:
+            print("Attempting free proxy setup for GitHub Actions...")
+            try:
+                pg = ProxyGenerator()
+                success = pg.FreeProxies()
+                if success:
+                    scholarly.use_proxy(pg)
+                    print("Free proxy configured.")
+                else:
+                    print("Free proxy setup failed; continuing direct.")
+            except Exception as pe:
+                print(f"Proxy error: {pe}. Continuing direct.")
+
+        print(f"Fetching author {AUTHOR_ID}...")
         author = scholarly.search_author_id(AUTHOR_ID)
         author = scholarly.fill(author, sections=["basics", "indices", "counts"])
-        return {
+        metrics = {
             "citations": author.get("citedby"),
             "h_index": author.get("hindex"),
             "i10_index": author.get("i10index"),
             "pubs": author.get("publications_count") or len(author.get("publications", [])),
         }
+        print(f"Fetched: {metrics}")
+        return metrics
     except Exception as e:
-        print(f"Could not fetch Scholar metrics: {e}", file=sys.stderr)
+        print(f"Fetch failed: {e}", file=sys.stderr)
         return None
 
 def update_file(path: Path, metrics: dict, date_str: str) -> bool:
@@ -55,9 +76,24 @@ def update_file(path: Path, metrics: dict, date_str: str) -> bool:
     return False
 
 def main():
-    metrics = fetch_metrics()
+    print("=" * 50)
+    print(f"Updating Scholar metrics for {AUTHOR_ID}")
+    print(f"Running in GitHub Actions: {IS_GITHUB_ACTIONS}")
+    print("=" * 50)
+
+    # Small random delay
+    time.sleep(random.uniform(1, 3))
+
+    # Try direct first
+    metrics = fetch_metrics(use_proxy=False)
+
+    # If failed and in Actions, try with proxy
+    if not metrics and IS_GITHUB_ACTIONS:
+        print("Direct failed; retrying with free proxy...")
+        metrics = fetch_metrics(use_proxy=True)
+
     if not metrics or not all(v is not None for v in metrics.values()):
-        print("No usable metrics; leaving files unchanged.")
+        print("No usable metrics (likely blocked). Leaving files unchanged.")
         return
 
     now = datetime.utcnow()
