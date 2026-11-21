@@ -34,16 +34,24 @@ def fetch_metrics():
         resp.raise_for_status()
         data = resp.json()
 
-        # Extract from author summary
-        author = data.get("author", {})
-        cited_by = author.get("cited_by", {})
-        citations = cited_by.get("table", [{}])[0].get("citations", {}).get("all")
-        h_index = cited_by.get("table", [{}])[1].get("h_index", {}).get("all")
-        i10_index = cited_by.get("table", [{}])[2].get("i10_index", {}).get("all")
+        # cited_by is top-level according to SerpAPI docs
+        cited_by = data.get("cited_by", {})
+        table = cited_by.get("table", [])
 
-        # Publication count from articles list or total
+        citations = None
+        h_index = None
+        i10_index = None
+
+        if len(table) > 0:
+            citations = table[0].get("citations", {}).get("all")
+        if len(table) > 1:
+            h_index = table[1].get("indice_h", table[1].get("h_index", {})).get("all")
+        if len(table) > 2:
+            i10_index = table[2].get("indice_i10", table[2].get("i10_index", {})).get("all")
+
+        # Publication count from articles list
         articles = data.get("articles", [])
-        pubs = len(articles) if articles else data.get("search_information", {}).get("total_results")
+        pubs = len(articles) if articles else None
 
         metrics = {
             "citations": citations,
