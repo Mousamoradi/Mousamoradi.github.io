@@ -21,9 +21,11 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        run: pip install scholarly
+        run: pip install requests
 
       - name: Fetch and update metrics
+        env:
+          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
         run: python .github/scripts/update_scholar.py
 
       - name: Commit and push if changed
