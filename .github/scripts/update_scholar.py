@@ -1,55 +1,66 @@
 #!/usr/bin/env python3
-"""Attempt to refresh Google Scholar citation metrics on the static site.
+"""Refresh Google Scholar citation metrics using SerpAPI.
 
-Google Scholar frequently blocks automated requests from GitHub Actions (datacenter IPs).
-This script tries direct access first, then free proxies (via scholarly.ProxyGenerator),
-and fails gracefully (exit 0, no changes) when blocked.
+Uses the google_scholar_author engine for exact citations, h-index, i10-index,
+and publication count. Fails gracefully if the key is missing or the request fails.
 """
 import os
 import re
 import sys
-import time
-import random
 from datetime import datetime
 from pathlib import Path
 
-try:
-    from scholarly import scholarly, ProxyGenerator
-except ImportError:
-    print("scholarly not installed", file=sys.stderr)
-    sys.exit(0)
+import requests
 
 AUTHOR_ID = "CYKwjg4AAAAJ"
-IS_GITHUB_ACTIONS = os.getenv("GITHUB_ACTIONS") == "true"
+SERPAPI_KEY = os.getenv("SERPAPI_KEY")
 
-def fetch_metrics(use_proxy=False):
+def fetch_metrics():
+    if not SERPAPI_KEY:
+        print("SERPAPI_KEY not set", file=sys.stderr)
+        return None
+
+    url = "https://serpapi.com/search"
+    params = {
+        "engine": "google_scholar_author",
+        "author_id": AUTHOR_ID,
+        "api_key": SERPAPI_KEY,
+        "hl": "en",
+    }
+
     try:
-        if use_proxy and IS_GITHUB_ACTIONS:
-            print("Attempting free proxy setup for GitHub Actions...")
-            try:
-                pg = ProxyGenerator()
-                success = pg.FreeProxies()
-                if success:
-                    scholarly.use_proxy(pg)
-                    print("Free proxy configured.")
-                else:
-                    print("Free proxy setup failed; continuing direct.")
-            except Exception as pe:
-                print(f"Proxy error: {pe}. Continuing direct.")
+        print(f"Fetching author {AUTHOR_ID} via SerpAPI...")
+        resp = requests.get(url, params=params, timeout=30)
+        resp.raise_for_status()
+        data = resp.json()
 
-        print(f"Fetching author {AUTHOR_ID}...")
-        author = scholarly.search_author_id(AUTHOR_ID)
-        author = scholarly.fill(author, sections=["basics", "indices", "counts"])
+        # Extract from author summary
+        author = data.get("author", {})
+        cited_by = author.get("cited_by", {})
+        citations = cited_by.get("table", [{}])[0].get("citations", {}).get("all")
+        h_index = cited_by.get("table", [{}])[1].get("h_index", {}).get("all")
+        i10_index = cited_by.get("table", [{}])[2].get("i10_index", {}).get("all")
+
+        # Publication count from articles list or total
+        articles = data.get("articles", [])
+        pubs = len(articles) if articles else data.get("search_information", {}).get("total_results")
+
         metrics = {
-            "citations": author.get("citedby"),
-            "h_index": author.get("hindex"),
-            "i10_index": author.get("i10index"),
-            "pubs": author.get("publications_count") or len(author.get("publications", [])),
+            "citations": citations,
+            "h_index": h_index,
+            "i10_index": i10_index,
+            "pubs": pubs,
         }
-        print(f"Fetched: {metrics}")
-        return metrics
+
+        if all(v is not None for v in metrics.values()):
+            print(f"Fetched: {metrics}")
+            return metrics
+        else:
+            print(f"Incomplete metrics: {metrics}", file=sys.stderr)
+            return None
+
     except Exception as e:
-        print(f"Fetch failed: {e}", file=sys.stderr)
+        print(f"SerpAPI error: {e}", file=sys.stderr)
         return None
 
 def update_file(path: Path, metrics: dict, date_str: str) -> bool:
@@ -77,23 +88,12 @@ def update_file(path: Path, metrics: dict, date_str: str) -> bool:
 
 def main():
     print("=" * 50)
-    print(f"Updating Scholar metrics for {AUTHOR_ID}")
-    print(f"Running in GitHub Actions: {IS_GITHUB_ACTIONS}")
+    print(f"Updating Scholar metrics for {AUTHOR_ID} via SerpAPI")
     print("=" * 50)
 
-    # Small random delay
-    time.sleep(random.uniform(1, 3))
-
-    # Try direct first
-    metrics = fetch_metrics(use_proxy=False)
-
-    # If failed and in Actions, try with proxy
-    if not metrics and IS_GITHUB_ACTIONS:
-        print("Direct failed; retrying with free proxy...")
-        metrics = fetch_metrics(use_proxy=True)
-
+    metrics = fetch_metrics()
     if not metrics or not all(v is not None for v in metrics.values()):
-        print("No usable metrics (likely blocked). Leaving files unchanged.")
+        print("No usable metrics. Leaving files unchanged.")
         return
 
     now = datetime.utcnow()
