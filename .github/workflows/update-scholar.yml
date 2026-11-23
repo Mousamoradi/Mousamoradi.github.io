@@ -2,8 +2,8 @@ name: Update Scholar Metrics
 
 on:
   schedule:
-    # Every Monday at 10:00 EST (15:00 UTC)
-    - cron: '0 15 * * 1'
+    # Every day at 10:00 EST (15:00 UTC)
+    - cron: '0 15 * * *'
   workflow_dispatch:
 
 permissions:
